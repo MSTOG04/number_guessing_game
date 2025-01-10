@@ -79,7 +79,7 @@ CHECK_ANSERW(){
     GAME $USERNAME $ANSWER $GUESS_COUNT $USER_GUESS
 
   else
-    echo $GUESS_COUNT
+    echo "You guessed it in $GUESS_COUNT tries. The secret number was $ANSWER. Nice job!"
   fi
 
 }
