@@ -25,7 +25,9 @@ INPUT() {
       USER_ID=$(echo $($PSQL "SELECT user_id FROM users WHERE username = '$NAME'") | sed 's/ //g')
       USERNAME=$(echo $($PSQL "SELECT username FROM users WHERE username = '$NAME'") | sed 's/ //g')
       GAMES_PLAYED=$(echo $($PSQL "SELECT games_played FROM users WHERE username = '$NAME'") | sed 's/ //g')
-      echo $USER_ID $USERNAME $GAMES_PLAYED 
+      BEST_GUESS=$(echo $($PSQL "SELECT MIN(number_tries) FROM users LEFT JOIN games USING(user_id) WHERE user_id=$USER_ID;") | sed 's/ //g')
+      
+      echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GUESS guesses."
 
     
     fi
@@ -35,7 +37,7 @@ INPUT() {
   fi
 
   ANSWER=$(( $RANDOM % 1000 + 1 ))
-  echo $ANSWER
+  
   GUESS_COUNT=0
 
   GAME $USERNAME $ANSWER $GUESS_COUNT
@@ -79,9 +81,35 @@ CHECK_ANSERW(){
     GAME $USERNAME $ANSWER $GUESS_COUNT $USER_GUESS
 
   else
+    SAVE_USER $GUESS_COUNT $USERNAME
     echo "You guessed it in $GUESS_COUNT tries. The secret number was $ANSWER. Nice job!"
+    
   fi
 
+}
+
+SAVE_USER(){
+
+  CHECK_USER=$($PSQL "SELECT username FROM users WHERE username = '$USERNAME'")
+
+  if [[ -z $CHECK_USER ]]
+  then
+    INSERT_USER=$($PSQL "INSERT INTO users(username, games_played) VALUES('$USERNAME', 1)")
+  
+  else
+    GET_GAMES=$($PSQL "SELECT games_played FROM users WHERE username = '$CHECK_USER'")
+    INSERT_USER=$($PSQL "UPDATE users SET games_played = ($GET_GAMES + 1) WHERE username = '$USERNAME'")
+
+  fi
+
+  SAVE_GAME $GUESS_COUNT $USERNAME
+}
+
+SAVE_GAME(){
+
+  USER_ID=$($PSQL "SELECT user_id FROM users WHERE username='$USERNAME';")
+  INSERT_GAME=$($PSQL "INSERT INTO games(user_id, number_tries) VALUES($USER_ID, $GUESS_COUNT);")
+  USERNAME=$($PSQL "SELECT username FROM users WHERE user_id=$USER_ID;")
 }
 
 INPUT
