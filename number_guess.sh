@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PSQL="psql -X --username=freecodecamp --dbname=number_guess --tuples-only -c"
+PSQL="psql --username=freecodecamp --dbname=number_guess -t --no-align -c"
 
 
 
@@ -80,9 +80,13 @@ CHECK_ANSERW(){
     read USER_GUESS
     GAME $USERNAME $ANSWER $GUESS_COUNT $USER_GUESS
 
-  else
+  elif [[ $USER_GUESS -eq $ANSWER ]]
+  then
     SAVE_USER $GUESS_COUNT $USERNAME
-    echo "You guessed it in $GUESS_COUNT tries. The secret number was $ANSWER. Nice job!"
+
+    NUMBER_OF_GUESSES=$GUESS_COUNT
+    SECRET_NUMBER=$ANSWER
+    echo "You guessed it in $NUMBER_OF_GUESSES tries. The secret number was $SECRET_NUMBER. Nice job!"
     
   fi
 
