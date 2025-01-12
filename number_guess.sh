@@ -25,7 +25,7 @@ INPUT() {
       USER_ID=$(echo $($PSQL "SELECT user_id FROM users WHERE username = '$NAME'") | sed 's/ //g')
       USERNAME=$(echo $($PSQL "SELECT username FROM users WHERE username = '$NAME'") | sed 's/ //g')
       GAMES_PLAYED=$(echo $($PSQL "SELECT games_played FROM users WHERE username = '$NAME'") | sed 's/ //g')
-      BEST_GUESS=$(echo $($PSQL "SELECT MIN(number_tries) FROM users LEFT JOIN games USING(user_id) WHERE user_id=$USER_ID;") | sed 's/ //g')
+      BEST_GUESS=$(echo $($PSQL "SELECT MIN(best_game) FROM users LEFT JOIN games USING(user_id) WHERE user_id=$USER_ID;") | sed 's/ //g')
       
       echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GUESS guesses."
 
@@ -108,7 +108,7 @@ SAVE_USER(){
 SAVE_GAME(){
 
   USER_ID=$($PSQL "SELECT user_id FROM users WHERE username='$USERNAME';")
-  INSERT_GAME=$($PSQL "INSERT INTO games(user_id, number_tries) VALUES($USER_ID, $GUESS_COUNT);")
+  INSERT_GAME=$($PSQL "INSERT INTO games(user_id, best_game) VALUES($USER_ID, $GUESS_COUNT);")
   USERNAME=$($PSQL "SELECT username FROM users WHERE user_id=$USER_ID;")
 }
 
